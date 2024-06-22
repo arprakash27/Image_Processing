@@ -1,22 +1,41 @@
+# pip install tensorflow keras pillow numpy pytesseract opencv-python
+
+import cv2
+import numpy as np
 from PIL import Image
-# from pytesseract import pytesseract
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# Defining paths to tesseract.exe
-# and the image we would be using
-# path_to_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-image_path = r".\raw_images\Reliance-Smart-Bill.webp"
 
-# Opening the image & storing it in an image object
-img = Image.open(image_path)
-img.show()
+def preprocess_image(image_path):
+    # Load the image
+    image = cv2.imread(image_path)
 
-# Providing the tesseract executable
-# location to pytesseract library
-# pytesseract.tesseract_cmd = path_to_tesseract
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-# Passing the image object to image_to_string() function
-# This function will extract the text from the image
-# text = pytesseract.image_to_string(img)
+    # Use adaptive thresholding to segment the text and logo
+    _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
 
-# Displaying the extracted text
-# print(text[:-1])
+    return image, gray, thresh
+
+
+def extract_text(gray_image):
+    # Use pytesseract to extract text
+    text = pytesseract.image_to_string(gray_image)
+    return text
+
+
+full_image_path = r".\raw_images\Reliance-Smart-Bill.webp"
+image, gray, thresh = preprocess_image(full_image_path)
+# Display the image in a window
+# Display the image in a window
+cv2.imshow('Image', image)
+text = extract_text(gray)
+
+print(text)
+# Wait for the user to press a key
+cv2.waitKey(0)
+
+# Close all windows
+cv2.destroyAllWindows()
